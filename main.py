@@ -1,14 +1,31 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class SentimentRequest(BaseModel):
     sentences: List[str]
 
-positive = ["love","great","good","amazing","awesome","happy","excellent"]
-negative = ["bad","terrible","hate","awful","worst","sad","angry"]
+positive_words = [
+    "love","great","good","amazing","awesome","happy","excellent",
+    "fantastic","wonderful","like","best","nice","enjoy"
+]
+
+negative_words = [
+    "bad","terrible","hate","awful","worst","sad","angry",
+    "horrible","disappointed","poor","annoying"
+]
 
 @app.get("/")
 def root():
@@ -17,10 +34,10 @@ def root():
 def classify(text):
     text = text.lower()
 
-    if any(w in text for w in positive):
+    if any(word in text for word in positive_words):
         return "happy"
 
-    if any(w in text for w in negative):
+    if any(word in text for word in negative_words):
         return "sad"
 
     return "neutral"
