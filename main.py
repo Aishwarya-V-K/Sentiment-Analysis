@@ -17,34 +17,28 @@ app.add_middleware(
 class SentimentRequest(BaseModel):
     sentences: List[str]
 
-positive_words = [
-    "love","great","good","amazing","awesome","happy","excellent",
-    "fantastic","wonderful","like","best","nice","enjoy"
-]
-
-negative_words = [
-    "bad","terrible","hate","awful","worst","sad","angry",
-    "horrible","disappointed","poor","annoying"
-]
+positive_words = ["love","great","good","amazing","awesome","happy","excellent"]
+negative_words = ["bad","terrible","hate","awful","worst","sad","angry"]
 
 @app.get("/")
 def root():
-    return {"message": "API is running"}
+    return {"message": "API running"}
 
 def classify(text):
     text = text.lower()
 
-    if any(word in text for word in positive_words):
+    if any(w in text for w in positive_words):
         return "happy"
 
-    if any(word in text for word in negative_words):
+    if any(w in text for w in negative_words):
         return "sad"
 
     return "neutral"
 
 
+# POST endpoint (main one)
 @app.post("/sentiment")
-def sentiment(data: SentimentRequest):
+def sentiment_post(data: SentimentRequest):
 
     results = []
 
@@ -55,3 +49,9 @@ def sentiment(data: SentimentRequest):
         })
 
     return {"results": results}
+
+
+# GET endpoint to prevent 405 error
+@app.get("/sentiment")
+def sentiment_get():
+    return {"message": "Use POST with sentences array"}
