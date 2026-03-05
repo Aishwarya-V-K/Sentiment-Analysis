@@ -1,46 +1,40 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-import re
 
 app = FastAPI()
 
 class SentimentRequest(BaseModel):
     sentences: List[str]
 
-positive_words = [
-    "love","great","good","amazing","awesome","happy","excellent",
-    "fantastic","wonderful","like","best","nice","enjoy"
-]
+positive = ["love","great","good","amazing","awesome","happy","excellent"]
+negative = ["bad","terrible","hate","awful","worst","sad","angry"]
 
-negative_words = [
-    "bad","terrible","hate","awful","worst","sad","angry",
-    "horrible","disappointed","poor","annoying"
-]
+@app.get("/")
+def root():
+    return {"message": "API is running"}
 
 def classify(text):
-    text_lower = text.lower()
+    text = text.lower()
 
-    if any(word in text_lower for word in positive_words):
+    if any(w in text for w in positive):
         return "happy"
 
-    if any(word in text_lower for word in negative_words):
+    if any(w in text for w in negative):
         return "sad"
 
     return "neutral"
 
 
 @app.post("/sentiment")
-def batch_sentiment(data: SentimentRequest):
+def sentiment(data: SentimentRequest):
 
     results = []
 
     for sentence in data.sentences:
-        sentiment = classify(sentence)
-
         results.append({
             "sentence": sentence,
-            "sentiment": sentiment
+            "sentiment": classify(sentence)
         })
 
     return {"results": results}
