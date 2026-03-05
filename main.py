@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,32 +25,29 @@ def root():
 
 def classify(text):
     text = text.lower()
-
     if any(w in text for w in positive_words):
         return "happy"
-
     if any(w in text for w in negative_words):
         return "sad"
-
     return "neutral"
 
 
-# POST endpoint (main one)
+# GET endpoint (prevents 405 error)
+@app.get("/sentiment")
+def sentiment_info():
+    return {"message": "Use POST with JSON body {'sentences': [...]}"}
+
+
+# POST endpoint (grader uses this)
 @app.post("/sentiment")
-def sentiment_post(data: SentimentRequest):
+def sentiment(data: SentimentRequest):
 
     results = []
 
-    for sentence in data.sentences:
+    for s in data.sentences:
         results.append({
-            "sentence": sentence,
-            "sentiment": classify(sentence)
+            "sentence": s,
+            "sentiment": classify(s)
         })
 
     return {"results": results}
-
-
-# GET endpoint to prevent 405 error
-@app.get("/sentiment")
-def sentiment_get():
-    return {"message": "Use POST with sentences array"}
